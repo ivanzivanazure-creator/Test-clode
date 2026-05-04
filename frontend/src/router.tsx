@@ -9,6 +9,7 @@ import { JournalPage } from './pages/journal/JournalPage'
 import { NewJournalPage } from './pages/journal/NewJournalPage'
 import { EmployeesPage } from './pages/employees/EmployeesPage'
 import { NewEmployeePage } from './pages/employees/NewEmployeePage'
+import { ReportsPage } from './pages/reports/ReportsPage'
 import { ProtectedRoute } from './components/layout/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { path: 'temeljnice/nova', element: <NewJournalPage /> },
       { path: 'zaposleni', element: <EmployeesPage /> },
       { path: 'zaposleni/novi', element: <NewEmployeePage /> },
+      { path: 'izvjestaji', element: <ReportsPage /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
