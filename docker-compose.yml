@@ -1,0 +1,66 @@
+version: '3.9'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: accounting-erp-db
+    environment:
+      SA_PASSWORD: "${SA_PASSWORD}"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "${SA_PASSWORD}" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - erp-net
+
+  api:
+    build:
+      context: ./src/AccountingERP.API
+      dockerfile: Dockerfile
+    container_name: accounting-erp-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=AccountingERP;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+      Jwt__Key: "${JWT_KEY}"
+      Jwt__Issuer: "AccountingERP"
+      Jwt__Audience: "AccountingERP-Client"
+      Encryption__Key: "${ENCRYPTION_KEY}"
+      Cors__Origins: "http://localhost:3000,https://${DOMAIN:-localhost}"
+    ports:
+      - "5000:8080"
+    networks:
+      - erp-net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: accounting-erp-web
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+    networks:
+      - erp-net
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  erp-net:
+    driver: bridge
