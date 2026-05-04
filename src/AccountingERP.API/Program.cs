@@ -1,12 +1,22 @@
 using AccountingERP.API.Middleware;
 using AccountingERP.Application;
 using AccountingERP.Infrastructure;
+using AccountingERP.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text;
 
+// ── Serilog bootstrap logger ───────────────────────────────────────────────
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("logs/app-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog();
 
 // ── Application + Infrastructure ───────────────────────────────────────────
 builder.Services.AddApplication();
@@ -46,6 +56,11 @@ builder.Services.AddRateLimiter(opt =>
     });
     opt.RejectionStatusCode = 429;
 });
+
+// ── Health Checks ──────────────────────────────────────────────────────────
+builder.Services
+    .AddHealthChecks()
+    .AddDbContextCheck<AppDbContext>("database");
 
 // ── Swagger ────────────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
@@ -98,5 +113,6 @@ app.UseMiddleware<TenantMiddleware>();
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
