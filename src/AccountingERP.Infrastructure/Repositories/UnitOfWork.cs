@@ -15,22 +15,31 @@ public sealed class UnitOfWork : IUnitOfWork
     private readonly AppDbContext _db;
     private readonly IPublisher   _publisher;
 
-    public IInvoiceRepository  Invoices  { get; }
-    public IJournalRepository  Journal   { get; }
-    public IEmployeeRepository Employees { get; }
+    public IInvoiceRepository          Invoices  { get; }
+    public IJournalRepository          Journal   { get; }
+    public IEmployeeRepository         Employees { get; }
+    public IClientRepository           Clients   { get; }
+    public IAccountingPeriodRepository Periods   { get; }
+    public IUserRepository             Users     { get; }
 
     public UnitOfWork(
-        AppDbContext        db,
-        IPublisher          publisher,
-        IInvoiceRepository  invoices,
-        IJournalRepository  journal,
-        IEmployeeRepository employees)
+        AppDbContext               db,
+        IPublisher                 publisher,
+        IInvoiceRepository         invoices,
+        IJournalRepository         journal,
+        IEmployeeRepository        employees,
+        IClientRepository          clients,
+        IAccountingPeriodRepository periods,
+        IUserRepository            users)
     {
         _db        = db;
         _publisher = publisher;
         Invoices   = invoices;
         Journal    = journal;
         Employees  = employees;
+        Clients    = clients;
+        Periods    = periods;
+        Users      = users;
     }
 
     /// <summary>

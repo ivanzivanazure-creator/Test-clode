@@ -8,6 +8,7 @@ using AccountingERP.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net.Mime;
 
 [ApiController]
 [Route("api/v1/invoices")]
@@ -145,6 +146,20 @@ public sealed class InvoicesController : ControllerBase
             return MapFailure(result.Error);
 
         return NoContent();
+    }
+
+    // ── GET api/v1/invoices/{id}/pdf ──────────────────────────────────────────
+
+    /// <summary>Generates and returns the invoice as a PDF file.</summary>
+    [HttpGet("{id:int}/pdf")]
+    [Produces("application/pdf")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPdf(int id, CancellationToken ct)
+    {
+        var result = await _sender.Send(new GetInvoicePdfQuery(id), ct);
+        if (!result.IsSuccess) return NotFound(result.Error);
+        return File(result.Value, MediaTypeNames.Application.Pdf, $"faktura-{id}.pdf");
     }
 
     // ── DELETE api/v1/invoices/{id} ───────────────────────────────────────────

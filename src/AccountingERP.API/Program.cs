@@ -35,6 +35,18 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddRateLimiter(opt =>
+{
+    opt.AddFixedWindowLimiter("api", o =>
+    {
+        o.PermitLimit         = 100;
+        o.Window              = TimeSpan.FromMinutes(1);
+        o.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        o.QueueLimit          = 10;
+    });
+    opt.RejectionStatusCode = 429;
+});
+
 // ── Swagger ────────────────────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -84,6 +96,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();

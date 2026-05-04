@@ -52,7 +52,10 @@ public static class DependencyInjection
         services.AddScoped<JournalRepository>();
         services.AddScoped<IJournalRepository>(sp  => sp.GetRequiredService<JournalRepository>());
         services.AddScoped<IJournalEntriesReader>(sp => sp.GetRequiredService<JournalRepository>());
-        services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+        services.AddScoped<IEmployeeRepository,         EmployeeRepository>();
+        services.AddScoped<IClientRepository,           ClientRepository>();
+        services.AddScoped<IAccountingPeriodRepository, AccountingPeriodRepository>();
+        services.AddScoped<IUserRepository,             UserRepository>();
 
         // ── Unit of Work ──────────────────────────────────────────────────────
 
@@ -66,6 +69,12 @@ public static class DependencyInjection
         // EncryptionService holds the AES key in memory; Singleton is appropriate
         // because the key is immutable after startup.
         services.AddSingleton<IEncryptionService, EncryptionService>();
+
+        // BcryptPasswordHasher is stateless; Singleton is safe and avoids allocations.
+        services.AddSingleton<IPasswordHasher, BcryptPasswordHasher>();
+
+        // InvoicePdfService: one instance per request (QuestPDF is not thread-safe per document).
+        services.AddScoped<IInvoicePdfService, InvoicePdfService>();
 
         return services;
     }

@@ -33,6 +33,9 @@ export function InvoiceDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           <Badge status={inv.status} />
+          <Button variant="secondary" onClick={() => window.open(`/api/v1/invoices/${id}/pdf`, '_blank')}>
+            Preuzmi PDF
+          </Button>
           {inv.status === 'Nacrt' && <Button variant="primary" onClick={() => issueMut.mutate()}>Izdaj fakturu</Button>}
           {(inv.status === 'Izdata' || inv.status === 'Dospela') && (
             <Button variant="primary" onClick={() => payMut.mutate()}>Označi plaćenom</Button>
